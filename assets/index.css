@@ -1,0 +1,74 @@
+/* --canvas-size will be set by js */
+canvas {
+    height: var(--canvas-size);
+    aspect-ratio: 1;
+
+    border: 2px solid black;
+}
+
+
+/* hide html-templates for js */
+#templates {
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+
+#vocab-header #meanings {
+    display: inline-block;
+
+    font-size: 1.2rem;
+    margin: 2em;
+}
+
+
+
+#vocab-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6em 2em;
+}
+
+.letter-container {
+
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 var(--canvas-size);
+    gap: 1em;
+
+    /* space for absolute-positioned drawing area */
+    position: relative;
+    padding-top: calc(var(--canvas-size) + 1em);
+}
+/* drawing area */
+.kanji-paper, canvas.letter-hint, canvas.prev-strokes, canvas.letter {
+    height: var(--canvas-size);
+    aspect-ratio: 1;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+canvas.letter { z-index: 4; }
+canvas.prev-strokes { z-index: 3; }
+canvas.letter-hint { z-index: 2; }
+.kanji-paper { z-index: 1; }
+
+
+/* work out result */
+/* .js-result-canvas--always-hidden, .js-result-label--always-hidden {
+    width: 0;
+    height: 0;
+    clip-path: none;
+    visibility: hidden;
+    margin: 0;
+    padding: 0;
+} */
+.js-result-label--always-hidden { margin-top: 2em; }
+
+/* help */
+.stroke-hint .stroke-diagram {
+    height: var(--canvas-size);
+    background: no-repeat var(--bg-img);
+}

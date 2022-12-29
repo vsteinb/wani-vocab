@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaniKani Vocab</title>
+
+    <link href="./index.css" rel="stylesheet">
+
+    <script src="/assets/js/pixel_filter.js" defer></script>
+    <script src="/assets/js/utils.js" defer></script>
+    <script src="/assets/js/configs.js" defer></script>
+    <script src="/assets/js/result.js" defer></script>
+    <script src="/assets/js/canvas.js" defer></script>
+    <script src="/assets/js/api.js" defer></script>
+    <script src="/assets/js/vocab.js" defer></script>
+</head>
+<body>
+    <h1>WaniKani Vocab</h1>
+
+    <aside>
+            <fieldset>
+                <legend>Filter</legend>
+
+                <label for="api-key">WaniKani API v2 key</label>
+                <input id="api-key" value="47c052e0-b4ca-4fbb-a9f8-49e579ec01ab">
+
+                <div class="form-row">
+                    <label for="level-min">Level min</label>
+                    <input type="number" min="1" max="50" step="1" value="1" id="level-min">
+                </div>
+                
+                <div class="form-row">
+                    <label for="level-max">Level max</label>
+                    <input type="number" min="1" max="60" step="1" value="60" id="level-max">
+                </div>
+    
+                <button id="submit-filter">Anwenden</button>
+            </fieldset>
+
+            <fieldset>
+                <legend>Styling</legend>
+
+                <div class="form-row">
+                    <label for="canvas-size">Buchstaben-Größe</label>
+                    <input type="range" min="50" max="600" step="50" value="250" id="canvas-size">
+
+                    <fieldset>
+                        <legend>Mode</legend>
+
+                        <input type="radio" id="practice" name="mode" value="practice" checked>
+                        <label for="practice">practice</label>
+
+                        <input type="radio" id="help" name="mode" value="help">
+                        <label for="help">with start points</label>
+
+                        <input type="radio" id="test" name="mode" value="test">
+                        <label for="test">test</label>
+                    </fieldset>
+                </div>
+            </fieldset>
+    </aside>
+
+
+    <main>
+        <div id="vocab-header">
+            <b id="meanings"></b>
+        </div>
+
+        <button id="next-vocab">Next vocab</button>
+
+        <article id="vocab-body"></article>
+
+    </main>
+
+    <div id="templates" aria-hidden="true">
+        
+        <div class="letter-container">
+
+            <canvas class="kanji-paper"></canvas>
+            <canvas class="letter-hint"></canvas>
+            <canvas class="prev-strokes"></canvas>
+            <canvas class="letter" data-compare-to-stroke=0></canvas>
+
+            <result class="result"></result>
+
+            <div class="js-result-label--always-hidden"><b>Start</b></div>
+            <canvas class="js-result-canvas--always-hidden start-img"></canvas>
+
+            <div class="js-result-label--always-hidden"><b>Perzentilen</b></div>
+            <canvas class="js-result-canvas--always-hidden percentile-img"></canvas>
+
+            <div class="js-result-label--always-hidden"><b>Perfect</b></div>
+            <canvas class="js-result-canvas--always-hidden perfect-img"></canvas>
+    
+            <button class="clear-btn">Clear</button>
+            <button class="stroke-hint-btn">toggle Hint</button>
+    
+            <div class="stroke-hint" style="display: none">
+                <div class="stroke-diagram" style="--bg-img: url(/assets/kanji_strokes/100_frames.svg)">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
