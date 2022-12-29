@@ -51,7 +51,7 @@ async function end_drawing(canvas, ctx, e) {
     if (canvas.dataset.drawing !== "on") { return; }
 
     const stroke_result = await test_stroke(canvas);
-console.log(result); // TODO
+console.log(stroke_result); // TODO
 
     // prepare for next stroke
     const next_stroke = parseInt(canvas.dataset.compareToStroke) +1;
