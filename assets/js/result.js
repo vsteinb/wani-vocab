@@ -66,9 +66,9 @@ function get_drawn_img(image_container) {
  * @param {number} padding have some buffer in all directions for error
  * @returns {boolean} true if start_pos is in bounds of the stroke's start, false on fail
  */
-async function test_start(canvas, start_pos, padding = .1* CANVAS_SIZE) {
+async function test_start(canvas, start_pos) {
     
-    const start = await get_start(canvas.parentNode, padding);
+    const start = await get_start(canvas.parentNode);
     // too far away from start?
     const fail = Math.abs(start.x - start_pos.x) + Math.abs(start.y - start_pos.y) > start.r;
 
@@ -180,7 +180,7 @@ function get_fails(canvas) {
 ////////////////////// PENALTY CALCULATION //////////////////////////
 
 /* on every stroke */
-async function test_stroke(canvas) {
+async function test_stroke(canvas, end_pos) {
     const image_container = canvas.parentNode;
     const perfect_img = await get_perfect_img(image_container);
     const drawn_img = get_drawn_img(image_container);
@@ -192,6 +192,9 @@ async function test_stroke(canvas) {
     const start = await get_start(canvas.parentNode);
     const drawn_start = JSON.parse(canvas.dataset.start);
 
+    // compare end
+    const end = await get_end(canvas.parentNode);
+
     // test stroke length
     const length_factor = get_length_factor(perfect_img, drawn_img);
 
@@ -201,9 +204,15 @@ async function test_stroke(canvas) {
     // result
     const result = {
         percentiles: percentile_penalties,
-        start: {perfect_start: start, drawn_start, diff: Math.abs(start.x - drawn_start.x) + Math.abs(start.y - drawn_start.y)},
+        start: Math.abs(start.x - drawn_start.x) + Math.abs(start.y - drawn_start.y),
+        end: Math.abs(end.x - end_pos.x) + Math.abs(end.y - end_pos.y),
         length: length_factor
     };
+
+console.log({
+    start: {perfect_start: start, drawn_start, diff: Math.abs(start.x - drawn_start.x) + Math.abs(start.y - drawn_start.y)},
+    end: {perfect_end: end, drawn_end: end_pos, diff: Math.abs(end.x - end_pos.x) + Math.abs(end.y - end_pos.y)},
+})
     return result;
 }
 

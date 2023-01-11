@@ -36,10 +36,8 @@ async function get_image_data_of_stroke(image_container, selector, stroke = null
 
         img.onload = function() {
 
-            SVG_FRAME_SIZE = 109;
-
             // get ImageData
-            ctx.drawImage(img, stroke * SVG_FRAME_SIZE, 0, SVG_FRAME_SIZE, SVG_FRAME_SIZE, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            ctx.drawImage(img, stroke * FRAME_SIZE_IN_SVG, 0, FRAME_SIZE_IN_SVG, FRAME_SIZE_IN_SVG, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
             let image_data = ctx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     
             // set ImageData
@@ -153,13 +151,14 @@ async function get_letter_hint_img(image_container, options = {
  * 
  * @param {HTMLElement} image_container of the letter and its buttons
  * @param {number} padding       how much px more padding to l, r, b, & t?
+ * @param {number} radius        radius around center
  * @returns {
  *  x: number,
  *  y: number,
  *  r: number
  * } Bounding box of start, including padding
  */
-async function get_start(image_container, padding = 0) {
+async function get_start(image_container, padding = START_PADDING, radius = RADIUS_OF_START_IN_SVG * (CANVAS_SIZE / FRAME_SIZE_IN_SVG)) {
     image_container.querySelector("canvas.start-img").getContext("2d").clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     let image_data = await get_image_data_of_stroke(image_container, "canvas.start-img");
 
@@ -193,18 +192,94 @@ async function get_start(image_container, padding = 0) {
         top_left_edge.y = Math.min(top_left_edge.y, y);
     };
 
-    // calculate diameter of start point in canvas from svg circle, including 2*padding
-    // radius_in_svg            ^= 5px on 109 px w/h total
-    //  * (CANVAS_SIZE / 109)   ^= scaling from svg to canvas
-    //  + padding               ^= add padding
-    const radius_in_svg = 5.0;
-    const radius = radius_in_svg * (CANVAS_SIZE / 109) + padding;
-
     return {
-        x: top_left_edge.x + radius_in_svg * CANVAS_SIZE / 109,
-        y: top_left_edge.y + radius_in_svg * CANVAS_SIZE / 109,
-        r: radius
+        x: top_left_edge.x + RADIUS_OF_START_IN_SVG * CANVAS_SIZE / FRAME_SIZE_IN_SVG,
+        y: top_left_edge.y + RADIUS_OF_START_IN_SVG * CANVAS_SIZE / FRAME_SIZE_IN_SVG,
+        r: radius + padding
     }
 }
 
+
+/**
+ * 
+ * @param {HTMLElement} image_container of the letter and its buttons
+ * @param {number} padding       how much px more padding to l, r, b, & t?
+ * @param {number} radius        radius around center
+ * @returns {
+ *  x: number,
+ *  y: number,
+ *  r: number
+ * } Bounding box of end, including padding
+ */
+async function get_end(image_container, padding = END_PADDING, radius = RADIUS_OF_START_IN_SVG * (CANVAS_SIZE / FRAME_SIZE_IN_SVG)) {
+
+    let image_data = await get_image_data_of_stroke(image_container, "canvas.perfect-img");
+
+    // remove parts that should be ignored
+    const make_transparent = (r, g, b, a, i) => {
+        return !is_start_stroke_overlap(r, g, b, a, i) &&
+                !is_black_stroke(r, g, b, a, i);
+    };
+    image_data = replace_color(image_data, make_transparent, "#00000000");
+
+    const OFFSET = CANVAS_SIZE / 50 || 1;
+
+    const start = await get_start(image_container);
+
+    let ends = [];
+    for (let i = 0; i < image_data.data.length; i += 4) {
+        const [r, g, b, a] = image_data.data.subarray(i, i+4);
+        if (is_transparent(r, g, b, a, i)) { continue; }
+
+        const x = (i/4) % CANVAS_SIZE;
+        const y = Math.floor((i/4) / CANVAS_SIZE);
+        if (Math.abs(start.x - x) + Math.abs(start.y - y) <= start.r) { continue; }
+
+        let colored_neighbors = 0;
+
+        // left
+        if (is_color_at(image_data, x-OFFSET, y)) { colored_neighbors++; }
+        if (is_color_at(image_data, x-OFFSET/2, y-OFFSET/2)) { colored_neighbors++; }
+        if (is_color_at(image_data, x-OFFSET/2, y+OFFSET/2)) { colored_neighbors++; }
+        // right
+        if (is_color_at(image_data, x+OFFSET, y)) { colored_neighbors++; }
+        if (is_color_at(image_data, x+OFFSET/2, y-OFFSET/2)) { colored_neighbors++; }
+        if (is_color_at(image_data, x+OFFSET/2, y+OFFSET/2)) { colored_neighbors++; }
+        // center x
+        if (is_color_at(image_data, x, y-OFFSET)) { colored_neighbors++; }
+        if (is_color_at(image_data, x, y+OFFSET)) { colored_neighbors++; }
+
+        if (colored_neighbors < 2) {
+            ends.push({x, y});
+        }
+    }
+
+!ends.length && console.error("NO END FOUND", {
+    ends: ends,
+    x: sum(...ends.map(end => end.x)) / ends.length,
+    y: sum(...ends.map(end => end.y)) / ends.length,
+});
+
+
+    return {
+        x: sum(...ends.map(end => end.x)) / ends.length,
+        y: sum(...ends.map(end => end.y)) / ends.length,
+        r: radius + padding
+    }
+}
+
+function is_color_at(image_data, x, y) {
+    const i = 4* (y * CANVAS_SIZE + x);
+    const [r, g, b, a] = image_data.data.subarray(i, i+4);
+
+    return is_color(r, g, b, a, i);
+}
+
+
 const get_rgba_color = (r, g, b, a) => `rgba(${r},${g},${b},${a/255})`;
+
+/**
+ * @param  {...number} numbers 
+ * @returns {number}
+ */
+const sum = (...numbers) => numbers.reduce((s, number) => s + number, 0);

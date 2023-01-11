@@ -64,6 +64,13 @@ document.querySelector("#submit-filter").addEventListener("click", () => {
 });
 
 
+/* FOR SVG */
+
+RADIUS_OF_START_IN_SVG = 5.0;
+FRAME_SIZE_IN_SVG = 109;
+
+
+/* RATING */
 
 const default_percentiles = [
     {
@@ -87,3 +94,12 @@ const default_percentiles = [
         penalty: 9
     }
 ];
+
+const START_PADDING = 0.15* CANVAS_SIZE;
+const END_PADDING = 0.25* CANVAS_SIZE;
+
+const WEIGHT_OF_FAILS = 0.1;
+const WEIGHT_OF_START = 0.15;
+const WEIGHT_OF_END = 0.15;
+const WEIGHT_OF_PERCENTILES = 0.3;
+const WEIGHT_OF_LENGTH = 0.3;

@@ -50,7 +50,10 @@ function drawing(canvas, ctx, e) {
 async function end_drawing(canvas, ctx, e) {
     if (canvas.dataset.drawing !== "on") { return; }
 
-    const stroke_result = await test_stroke(canvas);
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const stroke_result = await test_stroke(canvas, {x, y});
 console.log(stroke_result); // TODO
 
     // prepare for next stroke
